@@ -8,104 +8,194 @@
 #include <stdlib.h>
 #include <iostream>
 
-template <typename T>
+template<typename T>
 class LinkedList {
 private:
-    class Node {
-    public:
+    struct Node {
         friend class LinkedList;
-        Node(T val,Node * next):m_val(val),m_next(next){};
-        Node(T val):m_next(NULL),m_val(val){};
-    private:
 
+        Node(T val, Node *next = NULL) : m_val(val), m_next(next) {};
         Node *m_next;
         T m_val;
     };
+
+    Node *m_tail;
     Node *m_head;
 public:
     class Iterator;
-    LinkedList():m_head(NULL){};
+
+    LinkedList() : m_tail(new Node(0, NULL)), m_head(m_tail) {};
+
     ~LinkedList();
-    friend std::ostream& operator<<(std::ostream& os, const LinkedList<T>& list){
-        for ( LinkedList<int>::Iterator iterator = list.begin();
-              iterator != list.end(); iterator++)
-        {
-            os << *iterator << " ";
+
+    void pushFront(T value);
+
+    void pushBack(T value);
+
+    void popFront();
+
+    void popBack();
+
+    void remove(T val);
+
+    T front();
+
+    void clear();
+
+    friend std::ostream &operator<<(std::ostream &os, const LinkedList<T> &list) {
+        for (LinkedList<int>::Iterator iterator = list.begin();
+             iterator != list.end(); ++iterator) {
+            if (iterator->m_next == list.m_tail)
+                os << *iterator << std::endl;
+            else
+                os << *iterator << " -> ";
         }
         return os;
     }
 
-    void insert(T value);
-    void popFront();
-    Iterator begin() const{ return Iterator(m_head); }
-    Iterator end() const { return Iterator(NULL); }
-    class Iterator
-    {
+    Iterator begin() const { return Iterator(m_head); }
+
+    Iterator end() const { return Iterator(m_tail); }
+
+    class Iterator {
     public:
 
-        Iterator(const Node* pNode):
-                m_pCurrentNode (pNode) { }
-
-        Iterator& operator=(Node* pNode)
-        {
-            this->m_pCurrentNode = pNode;
-            return *this;
-        }
+        Iterator(const Node *const pNode) : m_node(pNode) {}
 
         // Prefix ++ overload
-        Iterator& operator++()
-        {
-            if (m_pCurrentNode)
-                m_pCurrentNode = m_pCurrentNode->m_next;
+        Iterator &operator++() {
+            if (m_node)
+                m_node = m_node->m_next;
             return *this;
         }
 
         // Postfix ++ overload
-        Iterator operator++(int)
-        {
-            Iterator iterator = *this;
-            ++*this;
+        Iterator operator++(int) {
+            Iterator iterator(*this);
+            ++(*this);
             return iterator;
         }
 
-        bool operator!=(const Iterator& iterator)
-        {
-            return m_pCurrentNode != iterator.m_pCurrentNode;
+        bool operator!=(const Node &node) {
+            return (m_node != node);
         }
 
-        int operator*()
-        {
-            return m_pCurrentNode->m_val;
+        bool operator!=(const Iterator &iterator) {
+            return (m_node != iterator.m_node);
+        }
+
+        bool operator==(const Iterator &iterator) {
+            return (m_node == iterator.m_node);
+        }
+
+        const Node *operator->() const {
+            return m_node;
+        }
+
+        T operator*() {
+            return m_node->m_val;
         }
 
     private:
-        const Node* m_pCurrentNode;
+        const Node *m_node;
     };
 
 
 };
-template <typename T>
-inline LinkedList<T>::~LinkedList(){
+
+template<typename T>
+inline LinkedList<T>::~LinkedList() {
+    clear();
+    delete (m_tail);
+}
+
+template<typename T>
+inline void LinkedList<T>::clear() {
     Node *temp = m_head;
     Node *temp_next;
-    while(temp){
+    while (temp != m_tail) {
         temp_next = temp->m_next;
-        delete(temp);
+        delete (temp);
         temp = temp_next;
     }
+    m_head = m_tail;
 }
-template <typename T>
-inline void LinkedList<T>::insert(T value){
 
-    Node* temp = m_head;
-    m_head = new Node(value, temp);
+template<typename T>
+inline void LinkedList<T>::pushFront(T value) {
+    m_head = new Node(value, m_head);
 }
-template <typename T>
-inline void LinkedList<T>::popFront(){
-    Node* temp = m_head;
-    if(m_head){
-        m_head =m_head->m_next;
-        delete(temp);
+
+template<typename T>
+inline void LinkedList<T>::popFront() {
+    if (m_head == m_tail) {
+        throw std::underflow_error("Underflow! There are no elements in list to pop!\n");
+    }
+    Node *temp = m_head;
+    m_head = m_head->m_next;
+    delete (temp);
+}
+
+template<typename T>
+inline void LinkedList<T>::pushBack(T value) {
+    if (m_head == m_tail)
+        m_head = new Node(value, m_tail);
+    else {
+        Node *node = new Node(value, m_tail);
+        Node *temp = m_head;
+        while (temp->m_next != m_tail) {
+            temp = temp->m_next;
+        }
+        temp->m_next = node;
+    }
+
+}
+
+template<typename T>
+inline T LinkedList<T>::front() {
+    return m_head->m_val;
+}
+
+template<typename T>
+inline void LinkedList<T>::popBack() {
+    if (m_head == m_tail) {
+        throw std::underflow_error("There are no elements in list to pop!\n");
+    }
+    if (m_head->m_next == m_tail) {
+        delete (m_head);
+        m_head = m_tail;
+    } else {
+        Node *temp = m_head;
+        while (temp->m_next->m_next != m_tail) {
+            temp = temp->m_next;
+        }
+        delete (temp->m_next);
+        temp->m_next = m_tail;
+    }
+
+}
+
+template<typename T>
+inline void LinkedList<T>::remove(T val) {
+    if (m_head == m_tail)
+        return;
+    Node *temp = m_head->m_next;
+    if(m_head->m_val == val){
+        delete(m_head);
+        m_head = temp;
+    }
+    else {
+        temp = m_head;
+        Node *temp1;
+        while (temp != m_tail && temp->m_next->m_val != val) {
+            temp = temp->m_next;
+        }
+        if (temp == m_tail)
+            return;
+        temp1 = temp->m_next->m_next;
+        delete (temp->m_next);
+        temp->m_next = temp1;
     }
 }
+
 #endif //LINKEDLISTIMP_LINKEDLIST_H
