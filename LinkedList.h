@@ -187,7 +187,7 @@ inline void LinkedList<T>::remove(T val) {
         Node *temp1;
         while (temp != m_tail ) {
             temp = temp->m_next;
-            if(temp->m_next->m_val != val){
+            if(temp->m_next->m_val == val){
                 temp1 = temp->m_next->m_next;
                 delete (temp->m_next);
                 temp->m_next = temp1;
