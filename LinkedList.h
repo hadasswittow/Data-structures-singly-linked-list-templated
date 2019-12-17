@@ -177,8 +177,6 @@ inline void LinkedList<T>::popBack() {
 
 template<typename T>
 inline void LinkedList<T>::remove(T val) {
-    if (m_head == m_tail)
-        return;
     Node *temp = m_head->m_next;
     if(m_head->m_val == val){
         delete(m_head);
@@ -187,14 +185,16 @@ inline void LinkedList<T>::remove(T val) {
     else {
         temp = m_head;
         Node *temp1;
-        while (temp != m_tail && temp->m_next->m_val != val) {
+        while (temp != m_tail ) {
             temp = temp->m_next;
+            if(temp->m_next->m_val != val){
+                temp1 = temp->m_next->m_next;
+                delete (temp->m_next);
+                temp->m_next = temp1;
+                return;
+            }
         }
-        if (temp == m_tail)
-            return;
-        temp1 = temp->m_next->m_next;
-        delete (temp->m_next);
-        temp->m_next = temp1;
+
     }
 }
 
