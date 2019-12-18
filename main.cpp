@@ -3,11 +3,11 @@
 int main() {
 
 
-    testPushBack();
-    testInsert();
-    testPopFront();
-    testPopBack();
+//    testPushBack();
+//    testInsert();
+//    testPopFront();
+//    testPopBack();
     testRemove();
-
+    testAssignmentOperator();
     return 0;
 }

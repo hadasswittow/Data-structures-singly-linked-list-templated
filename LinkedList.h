@@ -24,7 +24,7 @@ private:
 public:
     class Iterator;
 
-    LinkedList() : m_tail(new Node(0, NULL)), m_head(m_tail) {};
+    LinkedList() : m_tail(NULL), m_head(m_tail) {};
 
     ~LinkedList();
 
@@ -42,8 +42,9 @@ public:
 
     void clear();
 
+    LinkedList& operator=(const LinkedList& other );
     friend std::ostream &operator<<(std::ostream &os, const LinkedList<T> &list) {
-        for (LinkedList<int>::Iterator iterator = list.begin();
+        for (LinkedList<T>::Iterator iterator = list.begin();
              iterator != list.end(); ++iterator) {
             if (iterator->m_next == list.m_tail)
                 os << *iterator << std::endl;
@@ -106,9 +107,17 @@ public:
 template<typename T>
 inline LinkedList<T>::~LinkedList() {
     clear();
-    delete (m_tail);
 }
 
+template<typename T>
+LinkedList<T>& LinkedList<T>::operator=(const LinkedList<T>& other ){
+    this->clear();
+    for (LinkedList<T>::Iterator iterator = other.begin();
+         iterator != other.end(); ++iterator) {
+        pushFront(*iterator);
+    }
+    return *this;
+}
 template<typename T>
 inline void LinkedList<T>::clear() {
     Node *temp = m_head;
